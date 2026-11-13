@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>投稿審查系統</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script.js" defer></script>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">投稿審查系統</a>
+    {% if request.session.get('user') %}
+    <nav>
+      <span>{{ request.session.user.username }} · {{ '作者' if request.session.user.role == 'author' else '編輯' }}</span>
+      <form method="post" action="/logout">
+        {% include 'csrf.html' %}<button class="secondary">登出</button>
+      </form>
+    </nav>
+    {% endif %}
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer>1151 期中個人專題 · 投稿審查</footer>
+</body>
+</html>

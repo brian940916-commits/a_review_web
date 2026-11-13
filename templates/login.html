@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="login">
+  <p class="eyebrow">歡迎使用</p>
+  <h1>登入投稿審查系統</h1>
+  <p class="muted">作者管理投稿，編輯查看與審查稿件。</p>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" action="/login">
+    {% include 'csrf.html' %}
+    <label for="username">帳號</label>
+    <input id="username" name="username" autocomplete="username" required>
+    <label for="password">密碼</label>
+    <input id="password" type="password" name="password" autocomplete="current-password" required>
+    <button>登入</button>
+  </form>
+</section>
+{% endblock %}

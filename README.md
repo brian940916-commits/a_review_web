@@ -1,46 +1,96 @@
 # 投稿審查系統
 
-1151 期中個人專題，依課堂 PPT 的投稿審查需求製作。
+依 1151 期中個人專題 PPT 製作，參考 DB-Basic Example 的 FastAPI、HTML 表單、Session、Jinja2 與直接 SQL 寫法。
 
-## 目前進度
+## 功能
 
-- 2026-11-13：完成 PPT 與 DB-Basic Example 範例分析。
-- 2026-11-13：確認採用 PostgreSQL，保留課堂範例的 FastAPI、HTML 表單與直接 SQL 寫法。
-- 目前先建立需求紀錄，應用程式尚未完成。
+- 作者：查看自己的稿件、新增、修改及刪除編輯中的稿件、送出投稿。
+- 編輯：查看待審清單與文章，通過或退回稿件。
+- 狀態：編輯中 → 審查中 → 已通過，退回時回到編輯中。
+- 補充規則：後端檢查角色、作者擁有權及狀態，不能透過修改網址操作他人稿件。
 
-## 使用技術
+## 第一次安裝
 
-- uv：管理 Python 套件與啟動專案。
-- Python、FastAPI：處理網頁請求與表單。
-- PostgreSQL：儲存使用者與稿件。
-- Jinja2、HTML：顯示列表與表單。
-- CSS：基本排版。
-- JavaScript：刪除與送出前的確認視窗。
+需要 uv、Python 3.12 以上與 PostgreSQL。以下命令在專案資料夾的 PowerShell 執行。
 
-## PPT 功能需求
+```powershell
+uv sync
+Copy-Item .env.example .env
+```
 
-### 作者
+使用 pgAdmin 或 psql 建立專題資料庫（只執行一次）：
 
-- 查看投稿清單：類別、標題、審查狀態。
-- 新增、編輯投稿：類別、標題、文章內容，狀態為「編輯中」。
-- 刪除編輯中的稿件。
-- 送出投稿：編輯中 → 審查中。
+```sql
+CREATE DATABASE a_review_web;
+```
 
-### 編輯
+編輯 `.env`，將 DATABASE_URL 的 YOUR_PASSWORD 換成本機 PostgreSQL 密碼，並設定 SESSION_SECRET 為自己的隨機字串。可以用以下命令產生：
 
-- 查看待審查清單：作者、類別、標題。
-- 查看稿件內容。
-- 通過稿件：審查中 → 已通過。
-- 退回稿件：審查中 → 編輯中。
+```powershell
+uv run python -c "import secrets; print(secrets.token_hex(32))"
+```
 
-## 實作方向
+再執行：
 
-參考 DB-Basic Example 的 Form、Jinja2Templates、RedirectResponse、Session 與直接 SQL 寫法。主要功能放在 main.py，資料庫連線放在 db.py，HTML 放在 templates，CSS 與 JavaScript 放在靜態檔案目錄。
+```powershell
+uv run python init_db.py
+uv run python run.py
+```
 
-補充規則：作者只能操作自己的稿件，只有編輯中的稿件可修改，後端檢查角色與狀態。這些是實作補充，並非 PPT 的逐字要求。
+瀏覽器開啟 http://127.0.0.1:8000 。按 Ctrl+C 停止伺服器，修改 Python 後重新執行啟動命令。
 
-資料庫密碼與 Session 金鑰使用本機環境設定，不提交到儲存庫。
+這次製作時已在原電腦完成獨立資料庫、`.env` 與資料表設定，原電腦直接執行 `uv run python run.py` 即可。從 GitHub 下載到其他電腦時，仍需完成上述第一次安裝。
+
+**課堂範例之外的調整：** 本機 Python 3.14 在 Windows 預設的事件迴圈無法配合 psycopg 非同步連線，因此新增 run.py，明確使用 SelectorEventLoop。這裡的啟動命令是專案補充，並非 PPT 原文。
+
+## 示範帳號
+
+| 帳號 | 密碼 | 角色 |
+| --- | --- | --- |
+| author | 初始化時輸入的密碼 | 作者 |
+| author2 | 初始化時輸入的密碼 | 第二位作者，測試資料隔離 |
+| editor | 初始化時輸入的密碼 | 編輯 |
+
+初始化時會要求輸入至少 8 字元的密碼。這是本機課堂示範版本，帳號由 init_db.py 建立，沒有註冊功能。重跑初始化不刪除既有資料，也不重設既有帳號密碼。密碼以雜湊存放；正式公開使用前需更換示範帳號、設定 HTTPS 與登入限制。
+
+## 操作練習
+
+1. 用 author 登入，新增文章並儲存。
+2. 回清單編輯內容，確認後按「送出投稿」。
+3. 登出，用 editor 登入，開啟稿件，按「退回修改」。
+4. 用 author 登入，修改並再次送出。
+5. 用 editor 登入，按「通過稿件」。
+6. 用 author 登入，可看到「已通過」，不能再修改或刪除。
+
+## 檔案與閱讀順序
+
+| 檔案 | 用途 |
+| --- | --- |
+| schema.sql | users 與 articles 資料表 |
+| db.py | 課堂風格的資料庫連線池及 getDB |
+| main.py | 登入、清單、新增、修改、刪除、送審、審查 |
+| templates/ | HTML 表單與清單，Jinja2 顯示資料 |
+| static/style.css | 基本排版與小螢幕調整 |
+| static/script.js | 刪除及送審確認視窗 |
+| security.py | 密碼雜湊工具 |
+| init_db.py | 建立資料表與示範帳號 |
+| run.py | Windows 相容的啟動程式 |
+| test_workflow.py | 完整流程與權限驗證 |
+
+`Form(...)` 接收表單，`Depends(getDB)` 取得連線，SQL 使用參數而不是拼接文字，`TemplateResponse` 顯示網頁，`RedirectResponse(..., 303)` 在修改後回清單。CSRF 隱藏欄位用來確認表單來自目前登入的工作階段。
+
+## 測試
+
+```powershell
+uv run pytest -q
+```
+
+需要可連線的 PostgreSQL 與 `.env`。測試建立隨機命名的獨立 schema，結束後移除自己的 schema，不清空正式的稿件資料。涵蓋完整送審、退回、通過、刪除流程，以及錯誤登入、角色權限、他人稿件隔離、CSRF、欄位驗證及 HTML 跳脫。
+
+`.env`、虛擬環境與快取由 `.gitignore` 排除，不上傳 GitHub。
 
 ## 開發紀錄
 
-後續以 Git commit 記錄各階段的程式與文件變更，完成可執行版本後補上安裝、資料庫初始化、啟動與操作說明。
+- 2026-11-13：分析 PPT 與課堂資料夾，確認 PostgreSQL 方案，建立需求紀錄。
+- 2026-11-13：完成表單、Session 登入、作者與編輯功能、基本 CSS 與確認視窗。
+- 2026-11-13：修正 Windows 事件迴圈與終端機中文編碼問題。PostgreSQL 整合測試 2 項通過，瀏覽器確認登入及新增投稿表單。

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="/">返回清單</a>
+<p class="eyebrow">{{ article.category }}</p>
+<h1>{{ article.title }}</h1>
+<p class="muted">作者：{{ article.username }} · 狀態：{{ article.status }}</p>
+<article class="article-content">{{ article.content }}</article>
+{% if user.role == 'editor' and article.status == '審查中' %}
+<form class="actions" method="post" action="/article/{{ article.id }}/review">
+  {% include 'csrf.html' %}
+  <button name="decision" value="approve">通過稿件</button>
+  <button class="secondary" name="decision" value="return">退回修改</button>
+</form>
+{% endif %}
+{% if user.role == 'author' and article.status == '編輯中' %}<a class="button" href="/article/{{ article.id }}/edit">編輯稿件</a>{% endif %}
+{% endblock %}

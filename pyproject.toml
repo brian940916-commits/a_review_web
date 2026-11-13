@@ -1,0 +1,9 @@
+[project]
+name = "a-review-web"
+version = "0.1.0"
+description = "初學者投稿審查專題"
+requires-python = ">=3.12"
+dependencies = ["fastapi[standard]>=0.115", "jinja2>=3.1", "python-multipart>=0.0.20", "itsdangerous>=2.2", "psycopg[binary,pool]>=3.2", "python-dotenv>=1.0"]
+
+[dependency-groups]
+dev = ["pytest>=8", "httpx>=0.28"]

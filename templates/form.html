@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="/">返回清單</a>
+<h1>{{ '編輯投稿' if article else '新增投稿' }}</h1>
+<p class="muted">儲存後為「編輯中」，可回清單送出投稿。</p>
+<form class="article-form" method="post" action="{{ '/article/' ~ article.id ~ '/edit' if article else '/article/add' }}">
+  {% include 'csrf.html' %}
+  <label for="category">類別</label><input id="category" name="category" maxlength="50" required value="{{ article.category if article else '' }}" placeholder="例如：生活、科技、校園">
+  <label for="title">標題</label><input id="title" name="title" maxlength="150" required value="{{ article.title if article else '' }}">
+  <label for="content">文章內容</label><textarea id="content" name="content" rows="14" maxlength="20000" required>{{ article.content if article else '' }}</textarea>
+  <div class="actions"><button>儲存稿件</button><a href="/">取消</a></div>
+</form>
+{% endblock %}

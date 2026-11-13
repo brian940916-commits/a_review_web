@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="heading">
+  <div><p class="eyebrow">{{ '作者專區' if user.role == 'author' else '編輯專區' }}</p>
+  <h1>{{ '我的投稿' if user.role == 'author' else '待審查稿件' }}</h1></div>
+  {% if user.role == 'author' %}<a class="button" href="/article/add">新增投稿</a>{% endif %}
+</div>
+<p class="muted">{{ '先儲存草稿，確認內容後再送出投稿。' if user.role == 'author' else '開啟稿件內容後，選擇通過或退回。' }}</p>
+{% if articles %}
+<div class="table-wrap"><table>
+  <thead><tr>{% if user.role == 'editor' %}<th>作者</th>{% endif %}<th>類別</th><th>標題</th><th>審查狀態</th><th>操作</th></tr></thead>
+  <tbody>{% for a in articles %}<tr>
+    {% if user.role == 'editor' %}<td>{{ a.username }}</td>{% endif %}
+    <td>{{ a.category }}</td><td><a href="/article/{{ a.id }}">{{ a.title }}</a></td>
+    <td><span class="status {{ 'approved' if a.status == '已通過' else 'pending' if a.status == '審查中' else '' }}">{{ a.status }}</span></td>
+    <td><div class="actions"><a href="/article/{{ a.id }}">查看</a>
+    {% if user.role == 'author' and a.status == '編輯中' %}
+      <a href="/article/{{ a.id }}/edit">編輯</a>
+      <form method="post" action="/article/{{ a.id }}/submit" data-confirm="確定送出投稿？送出後需等編輯退回才能修改。">{% include 'csrf.html' %}<button>送出投稿</button></form>
+      <form method="post" action="/article/{{ a.id }}/delete" data-confirm="確定刪除這篇稿件？刪除後無法復原。">{% include 'csrf.html' %}<button class="danger">刪除</button></form>
+    {% endif %}</div></td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<div class="empty"><h2>{{ '還沒有投稿' if user.role == 'author' else '目前沒有待審查稿件' }}</h2><p>{{ '按下「新增投稿」開始撰寫第一篇文章。' if user.role == 'author' else '作者送出投稿後，稿件就會出現在這裡。' }}</p></div>{% endif %}
+{% endblock %}
